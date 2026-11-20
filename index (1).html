@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Ruletka — Shartlar o‘yini</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --pink:#ff3d8b; --violet:#7c4dff; --cyan:#19d3ff; --gold:#ffc83d; --green:#12d48a; --orange:#ff8a1f;
+    --font:"Rubik",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  :root[data-theme="dark"]{
+    --bg1:#0a0620; --bg2:#1c0b46; --text:#ffffff; --hint:#bdb6e3;
+    --glass:rgba(255,255,255,.07); --glass-b:rgba(255,255,255,.16); --input:rgba(255,255,255,.08);
+    --modal:#1b1040; --blob:.55; --shadow:rgba(0,0,0,.5);
+  }
+  :root[data-theme="light"]{
+    --bg1:#fff0f7; --bg2:#e6e0ff; --text:#1d1240; --hint:#6c6393;
+    --glass:rgba(255,255,255,.72); --glass-b:rgba(124,77,255,.22); --input:rgba(255,255,255,.95);
+    --modal:#ffffff; --blob:.4; --shadow:rgba(80,40,160,.25);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;min-height:100vh;color:var(--text);font-family:var(--font);overflow-x:hidden;
+    background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed}
+  body{padding:16px 14px calc(30px + env(safe-area-inset-bottom));position:relative}
+
+  /* ---------- Fon ---------- */
+  .bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+  .blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:var(--blob);animation:float 14s ease-in-out infinite}
+  .b1{width:300px;height:300px;background:var(--pink);top:-90px;left:-80px}
+  .b2{width:340px;height:340px;background:var(--violet);bottom:-120px;right:-100px;animation-delay:-5s}
+  .b3{width:240px;height:240px;background:var(--cyan);top:38%;left:55%;animation-delay:-9s}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(40px,-30px) scale(1.12)}66%{transform:translate(-30px,40px) scale(.92)}}
+  .stars{position:absolute;inset:0;background-image:
+    radial-gradient(2px 2px at 20% 30%,#fff9,transparent),radial-gradient(2px 2px at 70% 20%,#fff8,transparent),
+    radial-gradient(1.5px 1.5px at 40% 70%,#fff7,transparent),radial-gradient(2px 2px at 85% 65%,#fff8,transparent),
+    radial-gradient(1.5px 1.5px at 10% 85%,#fff7,transparent),radial-gradient(2px 2px at 55% 45%,#fff6,transparent);
+    animation:twinkle 4s ease-in-out infinite}
+  :root[data-theme="light"] .stars{opacity:.2}
+  @keyframes twinkle{0%,100%{opacity:1}50%{opacity:.35}}
+
+  .hidden{display:none !important}
+  button{font-family:var(--font);cursor:pointer;border:none;-webkit-appearance:none;color:inherit}
+
+  /* ---------- Sarlavha ---------- */
+  .hero{text-align:center;margin:4px 0 18px}
+  .hero .ico{font-size:54px;display:inline-block;animation:bob 2.4s ease-in-out infinite;filter:drop-shadow(0 8px 14px rgba(255,61,139,.5))}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-8px) rotate(6deg)}}
+  .hero h1{margin:0;font-size:clamp(38px,12vw,54px);font-weight:900;letter-spacing:2px;line-height:1;
+    background:linear-gradient(90deg,var(--pink),var(--gold),var(--cyan),var(--pink));background-size:300% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 5s linear infinite}
+  @keyframes shine{to{background-position:300% 0}}
+  .hero .tag{display:inline-block;margin-top:10px;padding:6px 16px;border-radius:999px;font-weight:700;font-size:13px;
+    letter-spacing:1.5px;text-transform:uppercase;background:var(--glass);border:1px solid var(--glass-b);color:var(--hint);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+
+  /* ---------- Kartalar ---------- */
+  .card{position:relative;border-radius:26px;padding:18px;margin-bottom:16px;
+    background:linear-gradient(var(--glass),var(--glass)) padding-box,
+               linear-gradient(135deg,rgba(255,61,139,.7),rgba(124,77,255,.5),rgba(25,211,255,.7)) border-box;
+    border:1.5px solid transparent;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    box-shadow:0 14px 40px var(--shadow)}
+  .card h2{margin:0 0 14px;font-size:17px;font-weight:800;display:flex;align-items:center;gap:10px}
+  .card h2 small{margin-left:auto;font-size:12px;font-weight:700;color:var(--hint)}
+  .row{display:flex;gap:8px}
+  input[type=text],textarea{flex:1;min-width:0;padding:14px 16px;border-radius:16px;border:1.5px solid var(--glass-b);
+    background:var(--input);color:var(--text);font-size:16px;font-family:var(--font);font-weight:500;outline:none;transition:border-color .2s, box-shadow .2s}
+  input[type=text]::placeholder,textarea::placeholder{color:var(--hint);opacity:.8}
+  input[type=text]:focus,textarea:focus{border-color:var(--pink);box-shadow:0 0 0 4px rgba(255,61,139,.2)}
+  textarea{resize:none;height:76px;width:100%}
+  .btn{padding:14px 18px;border-radius:16px;font-size:15px;font-weight:800;color:#fff;
+    background:linear-gradient(135deg,var(--violet),var(--pink));box-shadow:0 8px 20px rgba(124,77,255,.4);transition:transform .12s, filter .2s}
+  .btn:active{transform:scale(.94)}
+  .btn:disabled{opacity:.4;filter:grayscale(.5);box-shadow:none}
+
+  /* Son tanlash setkasi */
+  .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:14px}
+  .grid button{aspect-ratio:1;border-radius:16px;font-size:18px;font-weight:900;background:var(--glass);
+    border:1.5px solid var(--glass-b);color:var(--text);transition:all .18s}
+  .grid button:active{transform:scale(.9)}
+  .grid button.on{background:linear-gradient(135deg,var(--orange),var(--pink));border-color:transparent;color:#fff;
+    box-shadow:0 8px 18px rgba(255,61,139,.5);transform:translateY(-2px) scale(1.06)}
+
+  .chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+  .chip{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 14px;border-radius:999px;color:#fff;font-weight:800;font-size:14px;
+    box-shadow:0 6px 16px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.35);animation:pop .35s cubic-bezier(.2,1.6,.4,1);text-shadow:0 1px 2px rgba(0,0,0,.3)}
+  .chip.def{opacity:.72;font-weight:600}
+  .chip span{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chip button{width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.25);color:#fff;font-size:15px;line-height:24px;padding:0}
+  @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+  .note{margin:12px 2px 0;font-size:13px;color:var(--hint);font-weight:500}
+  .note b{color:var(--gold)}
+
+  details.card summary{list-style:none;cursor:pointer;font-weight:800;font-size:16px;display:flex;align-items:center;gap:10px}
+  details.card summary::-webkit-details-marker{display:none}
+  details.card summary::after{content:"＋";margin-left:auto;font-size:22px;color:var(--pink);transition:transform .25s}
+  details.card[open] summary::after{transform:rotate(45deg)}
+  details .inner{margin-top:14px}
+  .list{margin:12px 0 0;padding:0;list-style:none}
+  .list li{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;padding:11px 14px;margin-bottom:8px;
+    border-radius:14px;background:var(--input);font-size:14px;font-weight:500}
+  .list li button{background:none;font-size:18px;padding:0 2px}
+  .check{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:14px;font-weight:600}
+  .check input{width:20px;height:20px;accent-color:var(--pink)}
+
+  .start{position:relative;width:100%;padding:20px;border-radius:24px;font-size:20px;font-weight:900;letter-spacing:.5px;color:#fff;overflow:hidden;
+    background:linear-gradient(120deg,#ff3d8b,#ff8a1f,#ffc83d,#ff3d8b);background-size:250% 100%;animation:grad 4s linear infinite,pulse 1.8s ease-in-out infinite;
+    box-shadow:0 14px 34px rgba(255,61,139,.55);text-shadow:0 2px 6px rgba(0,0,0,.3)}
+  .start::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
+    transform:skewX(-20deg);animation:sweep 2.6s ease-in-out infinite}
+  .start:disabled{animation:none;filter:grayscale(.7);opacity:.5;box-shadow:none}
+  .start:disabled::after{display:none}
+  .start:active:not(:disabled){transform:scale(.97)}
+  @keyframes grad{to{background-position:250% 0}}
+  @keyframes pulse{0%,100%{box-shadow:0 14px 34px rgba(255,61,139,.55)}50%{box-shadow:0 14px 48px rgba(255,138,31,.8)}}
+  @keyframes sweep{0%{left:-60%}60%,100%{left:130%}}
+
+  /* ---------- O‘yin ekrani ---------- */
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .pill{padding:10px 16px;border-radius:999px;font-weight:800;font-size:14px;background:var(--glass);border:1.5px solid var(--glass-b);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--text)}
+  .pill.round{background:linear-gradient(135deg,var(--violet),var(--pink));border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(124,77,255,.45)}
+  .stage{position:relative;width:min(92vw,430px);aspect-ratio:1;margin:30px auto 16px}
+  .halo{position:absolute;inset:-6%;border-radius:50%;filter:blur(26px);opacity:.75;
+    background:conic-gradient(from 0deg,var(--pink),var(--gold),var(--green),var(--cyan),var(--violet),var(--pink));animation:rot 9s linear infinite}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  .stage.spinning .halo{animation-duration:1.6s;opacity:1}
+  .stage canvas{position:relative;width:100%;height:100%;display:block;filter:drop-shadow(0 14px 22px var(--shadow))}
+  .pointer{position:absolute;top:-26px;left:50%;width:44px;height:58px;margin-left:-22px;z-index:5;filter:drop-shadow(0 5px 6px rgba(0,0,0,.5))}
+  .pin{width:100%;height:100%;transform-origin:50% 8%;transition:transform .09s ease-out;
+    background:linear-gradient(160deg,#fff 0%,#ff6b9d 25%,#e0145f 70%,#8f0a3b 100%);
+    clip-path:polygon(50% 100%,2% 32%,10% 10%,50% 0,90% 10%,98% 32%)}
+  .pin::after{content:"";position:absolute;top:14px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#fff,#ffd36b 55%,#c8871a);box-shadow:0 1px 3px rgba(0,0,0,.5)}
+  .hub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:6;width:25%;aspect-ratio:1;border-radius:50%;
+    background:radial-gradient(circle at 32% 28%,#fff6c9 0%,#ffc83d 38%,#e0861a 100%);color:#5a2b00;font-weight:900;
+    font-size:clamp(11px,3.5vw,15px);line-height:1.1;text-transform:uppercase;letter-spacing:.3px;
+    box-shadow:0 8px 20px rgba(0,0,0,.45),inset 0 -6px 10px rgba(150,70,0,.4),inset 0 4px 8px rgba(255,255,255,.8),0 0 0 6px rgba(255,255,255,.18);
+    transition:transform .15s}
+  .hub::before{content:"";position:absolute;inset:-14%;border-radius:50%;border:3px solid rgba(255,200,61,.8);animation:ring 1.6s ease-out infinite}
+  .hub:disabled::before{animation:none;opacity:0}
+  .hub:disabled{filter:saturate(.6)}
+  .hub:active:not(:disabled){transform:translate(-50%,-50%) scale(.92)}
+  @keyframes ring{0%{transform:scale(.85);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+  .hint{text-align:center;color:var(--hint);font-size:13px;font-weight:600;margin:6px 0 0}
+  .tally{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+  .tally .t{display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:999px;font-weight:800;font-size:13px;background:var(--glass);border:1.5px solid var(--glass-b)}
+  .tally .t i{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 8px currentColor}
+
+  /* ---------- Modal ---------- */
+  .overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;
+    background:radial-gradient(circle at 50% 40%,rgba(30,10,70,.75),rgba(3,2,12,.92));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    opacity:0;pointer-events:none;transition:opacity .3s}
+  .overlay.show{opacity:1;pointer-events:auto}
+  .rays{position:absolute;width:160vmax;height:160vmax;left:50%;top:50%;margin:-80vmax 0 0 -80vmax;
+    background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.12) 0 8deg,transparent 8deg 16deg);
+    -webkit-mask-image:radial-gradient(circle,#000 0,transparent 40%);mask-image:radial-gradient(circle,#000 0,transparent 40%);animation:rot 16s linear infinite;pointer-events:none}
+  .modal{position:relative;width:100%;max-width:440px;max-height:94vh;overflow-y:auto;border-radius:34px;padding:26px 20px 20px;text-align:center;color:var(--text);
+    --pc:#ff3d8b;--pcg:rgba(255,61,139,.55);
+    background:linear-gradient(var(--modal),var(--modal)) padding-box,linear-gradient(135deg,var(--pc),#ffffff66,var(--pc)) border-box;
+    border:3px solid transparent;box-shadow:0 0 70px var(--pcg),0 30px 70px rgba(0,0,0,.6);
+    transform:scale(.4) rotate(-6deg);opacity:0;transition:transform .55s cubic-bezier(.2,1.5,.35,1),opacity .3s}
+  .overlay.show .modal{transform:none;opacity:1}
+  .modal .big{font-size:60px;line-height:1;animation:bob 1.8s ease-in-out infinite;display:inline-block}
+  .modal .lab{margin-top:6px;font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--hint)}
+  .modal .winner{margin:6px 0 16px;font-size:clamp(32px,11vw,50px);font-weight:900;text-transform:uppercase;line-height:1.05;word-break:break-word;
+    color:var(--pc);text-shadow:0 0 28px var(--pcg),0 4px 0 rgba(0,0,0,.18)}
+  .overlay.show .winner{animation:zoom .6s .15s cubic-bezier(.2,1.8,.4,1) both}
+  @keyframes zoom{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+  .cond-box{position:relative;padding:22px 16px 18px;margin:20px 0 18px;border-radius:24px;
+    background:linear-gradient(135deg,rgba(255,61,139,.16),rgba(124,77,255,.16));border:2px dashed var(--pc);opacity:0;transform:translateY(24px)}
+  .cond-box.reveal{opacity:1;transform:none;transition:all .5s cubic-bezier(.2,1.3,.4,1)}
+  .cond-box .ribbon{position:absolute;top:-15px;left:50%;transform:translateX(-50%);padding:6px 18px;border-radius:999px;white-space:nowrap;
+    font-size:12px;font-weight:900;letter-spacing:2px;color:#fff;background:linear-gradient(135deg,var(--orange),var(--pink));box-shadow:0 6px 14px rgba(255,61,139,.5)}
+  .cond{font-size:clamp(19px,5.8vw,25px);font-weight:900;text-transform:uppercase;line-height:1.28;letter-spacing:.2px}
+  .cond.long{font-size:clamp(16px,4.9vw,20px)}
+  .mbtns{display:flex;flex-direction:column;gap:10px}
+  .mbtns button{padding:17px;border-radius:20px;font-size:17px;font-weight:900;color:#fff;transition:transform .12s;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .mbtns button:active{transform:scale(.96)}
+  .ok{background:linear-gradient(135deg,#0fbf7f,#16e0a0);box-shadow:0 10px 22px rgba(18,212,138,.45)}
+  .chick{background:linear-gradient(135deg,#ff8a1f,#ffc83d);color:#4a2400 !important;text-shadow:none !important;box-shadow:0 10px 22px rgba(255,138,31,.45)}
+  .next{background:linear-gradient(135deg,var(--violet),var(--pink));box-shadow:0 10px 22px rgba(124,77,255,.45)}
+
+  .toast{position:fixed;left:50%;bottom:calc(32px + env(safe-area-inset-bottom));transform:translate(-50%,40px);z-index:90;padding:12px 22px;border-radius:999px;
+    font-weight:800;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--violet),var(--pink));box-shadow:0 10px 26px rgba(0,0,0,.4);
+    opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.2,1.4,.4,1)}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .conf{position:fixed;top:-24px;z-index:70;pointer-events:none;animation:fall linear forwards}
+  @keyframes fall{to{transform:translate(var(--dx),112vh) rotate(var(--rot))}}
+</style>
+</head>
+<body>
+
+<div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="stars"></div></div>
+
+<!-- ============ SOZLASH EKRANI ============ -->
+<section id="setup">
+  <div class="hero">
+    <div class="ico">🎡</div>
+    <h1>RULETKA</h1>
+    <div class="tag">Shartlar o‘yini</div>
+  </div>
+
+  <div class="card">
+    <h2>👥 Nechta kishi o‘ynaysiz? <small id="cnt">0 / 12</small></h2>
+    <div class="grid" id="grid"></div>
+    <div class="row">
+      <input type="text" id="nameInput" maxlength="18" placeholder="Ismni yozing…" autocomplete="off">
+      <button class="btn" id="addName">Qo‘shish</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <p class="note" id="note"></p>
+  </div>
+
+  <details class="card">
+    <summary>✍️ O‘z shartimni qo‘shaman <small style="color:var(--hint);font-size:12px;font-weight:700">(ixtiyoriy)</small></summary>
+    <div class="inner">
+      <textarea id="condInput" maxlength="160" placeholder="Shartingizni yozing… Boshqa ishtirokchi ismi uchun {other} deb yozing."></textarea>
+      <button class="btn" id="addCond" style="margin-top:10px;width:100%">+ Shart qo‘shish</button>
+      <ul class="list" id="condList"></ul>
+      <label class="check"><input type="checkbox" id="onlyCustom"> Faqat o‘zim qo‘shgan shartlar chiqsin</label>
+    </div>
+  </details>
+
+  <button class="start" id="start" disabled>🚀 O‘YINNI BOSHLASH</button>
+</section>
+
+<!-- ============ RULETKA EKRANI ============ -->
+<section id="game" class="hidden">
+  <div class="topbar">
+    <button class="pill" id="backBtn">⚙️ Ro‘yxat</button>
+    <div class="pill round" id="roundLbl">🔥 Raund 1</div>
+    <button class="pill" id="muteBtn" aria-label="Ovoz">🔊</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="halo"></div>
+    <div class="pointer"><div class="pin" id="pin"></div></div>
+    <canvas id="wheel"></canvas>
+    <button class="hub" id="spinBtn">Aylan-<br>tirish</button>
+  </div>
+  <p class="hint">👆 Markazdagi tugmani bosing</p>
+  <div class="tally" id="tally"></div>
+</section>
+
+<!-- ============ MODAL ============ -->
+<div class="overlay" id="overlay">
+  <div class="rays"></div>
+  <div class="modal" id="modal" role="dialog" aria-modal="true">
+    <div class="big">🎯</div>
+    <div class="lab">Navbat senda! Xohlasang bajar, xohlamasang — tovuq bo‘l 😏</div>
+    <div class="winner" id="mName"></div>
+    <div class="cond-box" id="condBox">
+      <div class="ribbon">⚡ SENING SHARTING</div>
+      <div class="cond" id="mCond"></div>
+    </div>
+    <div class="mbtns">
+      <button class="ok" id="doneBtn">✅ Shart bajarildi</button>
+      <button class="chick" id="chickBtn">🐔 Qo‘rqdim — tovuq bo‘laman</button>
+      <button class="next" id="nextBtn">➡️ Keyingi raund</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= Telegram ================= */
+  var tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+  var wheelDraw = function(){};
+
+  function setTheme(){
+    var dark = true;
+    if(tg && tg.colorScheme) dark = tg.colorScheme === "dark";
+    else if(window.matchMedia) dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    try{
+      if(tg){
+        tg.setHeaderColor(dark ? "#0a0620" : "#fff0f7");
+        tg.setBackgroundColor(dark ? "#0a0620" : "#fff0f7");
+      }
+    }catch(e){}
+    wheelDraw();
+  }
+  if(tg){
+    try{ tg.ready(); tg.expand(); }catch(e){}
+    try{ tg.onEvent("themeChanged", setTheme); }catch(e){}
+  } else if(window.matchMedia){
+    try{ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", setTheme); }catch(e){}
+  }
+  setTheme();
+
+  function haptic(kind){
+    try{
+      if(!tg || !tg.HapticFeedback) return;
+      if(kind === "tick") tg.HapticFeedback.selectionChanged();
+      else if(kind === "success") tg.HapticFeedback.notificationOccurred("success");
+      else tg.HapticFeedback.impactOccurred("heavy");
+    }catch(e){}
+  }
+
+  /* ================= Holat ================= */
+  var MAX = 12, MIN = 2;
+  var COLORS = ["#FF3D6E","#FF8A1F","#FFC21A","#18C5B3","#3D8BFF","#8B45F5","#10D98B","#F0328F","#FF5A1F","#14A6E0","#C65CFF","#6BD43C"];
+  var players = [], custom = [], onlyCustom = false;
+  var tally = [], chick = [], rotation = 0, spinning = false, round = 1, muted = false;
+  var used = {}, currentWinner = -1, bulbPhase = 0;
+
+  function save(){
+    try{ localStorage.setItem("ruletka_v2", JSON.stringify({players:players, custom:custom, onlyCustom:onlyCustom, muted:muted})); }catch(e){}
+  }
+  function load(){
+    try{
+      var d = JSON.parse(localStorage.getItem("ruletka_v2") || "null");
+      if(d){
+        if(Array.isArray(d.players)) players = d.players.slice(0, MAX);
+        if(Array.isArray(d.custom)) custom = d.custom;
+        onlyCustom = !!d.onlyCustom; muted = !!d.muted;
+      }
+    }catch(e){}
+  }
+
+  /* ================= SHARTLAR BAZASI =================
+     {other}, {other2} — boshqa ishtirokchilarning tasodifiy ismlari */
+  var GENERAL = [
+    // 🤫 HAQIQAT
+    "🤫 Hayotingdagi eng uyatli lahzani hamma oldida batafsil aytib ber. Yolg‘on gapirsang, {other} sezib qoladi!",
+    "🤫 Brauzeringdagi oxirgi qidiruvingni ovoz chiqarib hammaga ayt!",
+    "🤫 Davradagilardan kim bilan bir kunga joy almashgan bo‘lar eding? Nega? Rostini ayt!",
+    "🤫 Hayotingdagi eng katta yolg‘onni tan ol: kimga va nima haqida gapirgan eding?",
+    "🤫 Maktabdagi birinchi “krash”ingning ismini hamma oldida ayt!",
+    "🤫 Eng ko‘p uyalgan paytingni ayt: nima bo‘ldi, kim ko‘rdi?",
+    "🤫 Hech kim bilmaydigan g‘alati odatingni oshkor qil. Ko‘rsatib ber!",
+    "🤫 Davradagi kim eng ko‘p kechikadi, eng ko‘p ovqat yeydi va eng ko‘p uxlaydi? Ismlarni ayt!",
+    "🤫 Eng yomon sovg‘a nima bo‘lgan va uni kim bergan? Ismini ayt!",
+    "🤫 Telefoningdagi qaysi kontakt eng kulgili nom bilan saqlangan? Hammaga ko‘rsat!",
+    "🤫 {other} haqida hech qachon aytmagan kulgili fikringni ayt (xafa qilmasdan, hazil bilan)!",
+    "🤫 Oxirgi marta nima uchun yolg‘ondan kasal bo‘lding yoki ishdan/darsdan qolding? Hikoya qil!",
+    "🤫 Ko‘chada eng uyatli yiqilgan paytingni hikoya qil — tafsilotlari bilan!",
+    "🤫 Eng kulgili xatoing: kimgadir xabarni noto‘g‘ri yuborib qo‘yganmisan? Nima bo‘ldi?",
+    "🤫 Birinchi uchrashuvdagi eng kulgili voqeani aytib ber!",
+
+    // 📱 TELEFON
+    "📱 Telefoningdagi oxirgi 3 ta suratni hammaga ko‘rsat! (Tanlab bo‘lmaydi!)",
+    "📱 Onang yoki otangga qo‘ng‘iroq qilib, faqat “Palov qoldimi?” deb so‘ra va hech narsani tushuntirma!",
+    "📱 Telefoningdagi 5-kontaktga 🐔 emojisini yubor va javobini hammaga ko‘rsat!",
+    "📱 Do‘stingga ovozli xabar yubor: “Men sening sirringni bilaman…” va davomini kulgili o‘ylab top!",
+    "📱 Hikoyaga “Ruletka meni tanladi 😅” deb joylashtir va 1 soat saqlab tur!",
+    "📱 Guruhga faqat tovuq ovozidan iborat ovozli xabar yubor!",
+    "📱 Eng oxirgi yozishgan odamingga “Men uxlab qoldim, senga nima kerak edi?” deb yoz va javobini ko‘rsat!",
+    "📱 Telefoningdagi eng oxirgi qo‘shiqni baland ovozda qo‘yib, unga hamma oldida raqsga tush!",
+    "📱 Galereyadagi eng g‘alati suratingni hammaga ko‘rsat va nega borligini tushuntir!",
+
+    // 🎤 JASORAT
+    "🎤 {other} ga tiz cho‘kib, uni “Olam shohi/malikasi” deb e’lon qil va 20 soniya maqta!",
+    "🎤 Eng kulgili hazilingni ayt. Hech kim kulmasa — {other} dan kechirim so‘ra va yana bitta ayt!",
+    "🎤 Eng uyatli qo‘shig‘ingni hamma oldida kuylab ber — eshitmaganga olish yo‘q!",
+    "🎤 O‘rningdan turib, “Men dunyoning eng zo‘r odamiman!” deb 3 marta baqir!",
+    "🎤 10 ta o‘tirib-turish qil va har birida “Ruletka meni yaxshi ko‘radi!” de!",
+    "🎤 Davradagi birovni taqlid qil — hamma kim ekanini topguncha to‘xtama!",
+    "🎤 {other} ning eng kulgili 3 ta odatini ayt (yaxshi niyat bilan, hazil!).",
+    "🎤 {other} ga hazil tarzida eng kulgili “ishqiy gap”ni ayt. U 1 dan 10 gacha baho bersin!",
+    "🎤 1 daqiqa davomida faqat qo‘shiq so‘zlari bilan gapir!",
+    "🎤 Qo‘lingdagi narsani mikrofon qilib, “Eng zo‘r qo‘shiqchi” nutqini ayt. Hamma qarsak chalsin!",
+
+    // 🎭 SAHNA
+    "🎭 30 soniya o‘lib yotgan baliq bo‘l: ko‘zing ochiq, lab bilan “pl-pl” de!",
+    "🎭 Yostiq yoki stulga qarab eng ta’sirli “sevgi izhori”ni ayt!",
+    "🎭 Turk serialidagi qahramon bo‘l: “Yo‘q! Bu sen emassan!” deb dramatik yig‘la!",
+    "🎭 {other} bilan serialdagi janjal sahnasini ijro eting: baqirish, pauza, yig‘lash, eshikdan chiqib ketish!",
+    "🎭 Mushuk bo‘lib bir daqiqa to‘rt oyoqlab yur va hammaga “miyov” de!",
+    "🎭 20 soniya robotdek raqsga tush: har uch soniyada “xato!” deb to‘xta!",
+    "🎭 O‘zingni qo‘shni xola deb tasavvur qil: hammaning ishiga aralashib, kulgili tavsiyalar ber!",
+    "🎭 Eng zo‘r “yig‘lab-kulish” sahnasini ijro et: yig‘la, birdan kul, yana yig‘la!",
+
+    // ⚖️ TANLOV
+    "⚖️ Tanla: yo 1 daqiqa mushukdek miyovla, yo eng uyatli sirlaringdan birini ayt!",
+    "⚖️ Tanla: yo {other} ga 10 ta kompliment ayt, yo telefoningdagi bitta suratni hammaga ko‘rsat!",
+    "⚖️ Tanla: yo 1 soat kulgili laqab bilan yur (hamma seni shunday chaqiradi), yo 20 soniya tovuqdek “ko‘-ko‘” deb yur!",
+    "⚖️ Tanla: yo 20 soniya jiddiy tabassum qil, yo guruhga “Men eng chiroyliman” deb yoz!",
+    "⚖️ Tanla: yo {other} senga bitta kulgili buyruq beradi (xavfsiz!), yo bitta sirni ayt!",
+
+    // 🗳 OVOZ BERISH
+    "🗳 Uchga sanang va hamma barmoq bilan ko‘rsatsin: kim eng ko‘p uxlaydi? Eng ko‘p ovoz olgan ta’zim qilib: “Men uyqu qirolman!” desin!",
+    "🗳 Hamma barmoq bilan ko‘rsatsin: kim eng ko‘p yolg‘on gapiradi? Ko‘p ovoz olgan “Men yolg‘onchiman” deb 3 marta aytsin!",
+    "🗳 Barmoq bilan ko‘rsating: kim eng yomon haydovchi bo‘lardi? Ko‘p ovoz olgan hammadan kechirim so‘rasin!",
+    "🗳 Barmoq bilan ko‘rsating: kim eng kulgili? Ko‘p ovoz olgan 15 soniya stand-up hazil aytsin!",
+    "🗳 Kim eng ko‘p kechikadi? Ko‘p ovoz olgan “kechikish bo‘yicha jahon chempioni” nutqini so‘zlasin!",
+    "🗳 Kim eng ko‘p ovqat yeydi? Ko‘p ovoz olgan o‘zining “taomga muhabbat” qo‘shig‘ini kuylasin!"
+  ];
+
+  var BY_SIZE = {
+    2: [
+      "🎭 {other} bilan “tosh–qaychi–qog‘oz”: yutqazgan 30 soniya tovuqdek yursin va “ko‘-ko‘” desin!",
+      "🤫 {other} sendan 3 ta qiyin savol so‘raydi — rost javob ber yoki 🐔 bo‘l!",
+      "🎤 {other} dan kulgili qo‘shiq bilan “kechirim so‘ra”, nima uchun ekanini o‘zing o‘ylab top!",
+      "⚖️ Tanla: yo {other} 20 soniya seni kuldirishga urinadi (kulmasang — g‘olibsan!), yo sen unga 20 soniya raqs ijro etasan!",
+      "🎭 {other} bilan “yillar o‘tib uchrashgan sevishganlar” sahnasini ijro eting. Eng dramatik joyda to‘xtang!",
+      "🤫 {other} haqida unga hech qachon aytmagan kulgili fikringni ayt (xafa qilmasdan)!",
+      "📱 {other} bilan eng kulgili selfi oling va hikoyaga qo‘ying!"
+    ],
+    3: [
+      "🎭 Uchovingiz “yo‘lbars va ikki ovchi” sahnasini ijro eting: sen yo‘lbars bo‘lasan, hamma ovoz bilan!",
+      "🤫 {other} va {other2} sendan bittadan qiyin savol so‘raydi — rost javob ber yoki 🐔 bo‘l!",
+      "🎤 {other} va {other2} dan qay biri senga ko‘proq o‘xshashini ayt va nega ekanini kulgili asosla!",
+      "⚖️ Tanla: yo {other} ga 5 ta kompliment, yo {other2} ga 5 ta kulgili “tanqid” ayt (hazil!)!",
+      "🎭 Uchovingiz bittadan so‘z qo‘shib “Palov o‘g‘risi” detektiv ertagini to‘qing. Sen boshla!",
+      "🗳 {other} va {other2} kim kuchliroq ekanini bahslashsin. Sen hakamsan: g‘olibni kulgili medal bilan taqdirla!"
+    ],
+    4: [
+      "🎭 To‘rtovingiz “jonli rasm” yasang, boshqalar nima ekanini topsin. Eng kulgili poza g‘olib!",
+      "🤫 Qolgan uchalasining har biri haqida bittadan kulgili, lekin rost fikr ayt!",
+      "🎤 {other} va {other2} bilan “Qo‘shiq tanlovi”: har kim 10 soniya kuylaydi, hakam — sen!",
+      "⚖️ Tanla: yo qolgan uchalasiga bittadan kompliment, yo bittadan kulgili tanqid (hazil!) ayt!",
+      "🎭 To‘rt kishilik “poyezd” bo‘lib xonani aylanib chiqing. Sen — mashinist, “chuuu-chuuu”!",
+      "🗳 Uchga sanab barmoq bilan ko‘rsating: kim eng yaxshi aktyor bo‘la oladi? Ko‘p ovoz olgan 15 soniya sahna ko‘rsatsin!"
+    ],
+    5: [
+      "🎭 Beshovingiz stadiondagidek “to‘lqin” yasab ko‘rsating. Sen — dirijyor!",
+      "🤫 Qolgan to‘rtovidan har biri senga bittadan savol beradi — rost javob ber yoki 🐔 bo‘l!",
+      "🎤 {other} va {other2} bilan uch kishilik “mashhur reklama” sahnasini ko‘rsating, qolganlar baho bersin!",
+      "⚖️ Tanla: yo hammaning oldida eng uyatli sirlaringdan birini ayt, yo 5 ta o‘tirib-turishni opera ovozida sanab qil!",
+      "🗳 Barmoq bilan ko‘rsating: kim birinchi bo‘lib kulib yuboradi? Ko‘p ovoz olgan 20 soniya jiddiy turishi kerak — kulsa, jazo!",
+      "🎭 Besh kishilik jamoaga kulgili nom va shior o‘ylab top. Hamma baland ovozda takrorlasin!"
+    ],
+    6: [
+      "🎭 Oltovingiz ikki jamoaga bo‘lining va imo-ishora bilan topishmoq o‘ynang. Yutqazgan jamoa kulgili raqsga tushadi!",
+      "🤫 Qolgan beshovdan har biri senga bittadan savol beradi. Rost javob ber yoki 🐔 bo‘l!",
+      "🎤 Sen oltovingizning “prezidentisan”: 20 soniyada kulgili qonun e’lon qil — hamma bajarishi shart (xavfsiz va kulgili!)",
+      "⚖️ Tanla: yo qolgan beshovdan biriga eng kulgili usulda 15 soniya “rahmat” ayt, yo telefoningdagi bitta suratni ko‘rsat!",
+      "🗳 Barmoq bilan ko‘rsating: kim eng ko‘p yolg‘on gapirgan? Ko‘p ovoz olgan o‘zining eng katta yolg‘onini aytsin!",
+      "🎭 Oltovingiz bir-biringizning yelkasidan ushlab “ilon” bo‘ling va xonani aylanib chiqing. Sen — ilonning boshi!"
+    ],
+    big: [
+      "🗳 Hamma barmoq bilan ko‘rsatsin: kim eng ko‘p kechikadi? Ko‘p ovoz olgan “jahon chempioni” nutqini so‘zlasin!",
+      "🗳 Hamma barmoq bilan ko‘rsatsin: kim eng yaxshi hazilkash? Ko‘p ovoz olgan 20 soniya stand-up qilsin!",
+      "🎤 Davradagi hammaga bittadan kulgili laqab o‘ylab top. Laqablar 3 raund amal qiladi!",
+      "🎭 Hamma qo‘l ushlab, bir vaqtda “yuppiii!” deb baqirib sakrasin. Sen — dirijyor!",
+      "🎭 Sen rejissyorsan: 3 kishini tanla va ular bilan 20 soniyalik “kulgili film” suratga ol!",
+      "🤫 Davradagi hammadan eng kulgili “sir”ni so‘ra: har kim bittadan aytsin, sen eng yaxshisini tanla!",
+      "⚖️ Tanla: yo davradagi har kimga bittadan kompliment ayt, yo bitta uyatli sirni ayt!",
+      "🎤 {other} va {other2} bilan raqs jamoasi bo‘lib, hammaning oldida 15 soniya raqsga tushing!",
+      "🎭 Davra: sen boshla, hamma navbat bilan bitta hayvon ovozini chiqarsin. Takrorlagan — o‘yindan chiqadi!",
+      "🗳 Hamma barmoq bilan ko‘rsatsin: kim eng ko‘p uxlaydi? Ko‘p ovoz olgan “uyqu qiroli” nutqini so‘zlasin!"
+    ]
+  };
+
+  function pool(n){
+    if(onlyCustom && custom.length) return custom.slice();
+    return (BY_SIZE[n] || BY_SIZE.big || []).concat(GENERAL, custom);
+  }
+  function fill(text, wi){
+    var others = [];
+    for(var i=0;i<players.length;i++) if(i !== wi) others.push(players[i]);
+    function take(){ return others.length ? others.splice(Math.floor(Math.random()*others.length),1)[0] : null; }
+    var o1 = take(), o2 = take();
+    if(!o1) o1 = "yoningdagi do‘sting";
+    if(!o2) o2 = o1;
+    return text.replace(/\{other2\}/g, o2).replace(/\{other\}/g, o1);
+  }
+  function pickCondition(wi){
+    var p = pool(players.length);
+    var fresh = p.filter(function(c){ return !used[c]; });
+    if(!fresh.length){ used = {}; fresh = p; }
+    var c = fresh[Math.floor(Math.random()*fresh.length)];
+    used[c] = true;
+    return fill(c, wi);
+  }
+
+  /* ================= Elementlar ================= */
+  var $ = function(id){ return document.getElementById(id); };
+  var elSetup=$("setup"), elGame=$("game"), chips=$("chips"), grid=$("grid");
+  var nameInput=$("nameInput"), condInput=$("condInput"), condList=$("condList"), onlyCustomEl=$("onlyCustom");
+  var startBtn=$("start"), spinBtn=$("spinBtn"), canvas=$("wheel"), ctx=canvas.getContext("2d"), stage=$("stage");
+
+  var DEF = /^Ishtirokchi \d+$/;
+  function defName(){
+    var k = 1, nm;
+    do { nm = "Ishtirokchi " + k; k++; } while(players.indexOf(nm) !== -1);
+    return nm;
+  }
+
+  /* ---------- Sozlash ---------- */
+  function renderGrid(){
+    grid.innerHTML = "";
+    for(var k=MIN;k<=MAX;k++){
+      (function(k){
+        var b = document.createElement("button");
+        b.textContent = k; if(players.length === k) b.className = "on";
+        b.onclick = function(){ setCount(k); haptic("tick"); };
+        grid.appendChild(b);
+      })(k);
+    }
+  }
+  function setCount(k){
+    while(players.length > k) players.pop();
+    while(players.length < k) players.push(defName());
+    save(); renderAll();
+  }
+  function renderChips(){
+    chips.innerHTML = "";
+    players.forEach(function(name, i){
+      var c = document.createElement("div");
+      c.className = "chip" + (DEF.test(name) ? " def" : "");
+      c.style.background = "linear-gradient(135deg," + COLORS[i % COLORS.length] + "," + mix(COLORS[i % COLORS.length], 0, .3) + ")";
+      var s = document.createElement("span"); s.textContent = name;
+      var b = document.createElement("button"); b.textContent = "×"; b.setAttribute("aria-label","O‘chirish");
+      b.onclick = function(){ players.splice(i,1); save(); renderAll(); };
+      c.appendChild(s); c.appendChild(b); chips.appendChild(c);
+    });
+  }
+  function renderNote(){
+    var n = players.length, note = $("note");
+    $("cnt").textContent = n + " / " + MAX;
+    if(n < MIN){
+      note.innerHTML = "Kamida <b>2 ta</b> ishtirokchi tanlang yoki ismlarni yozing 👆";
+    } else {
+      note.innerHTML = "🔥 Shu guruh uchun <b>" + pool(n).length + " ta</b> tayyor shart bor. Ismni yozsangiz, birinchi “Ishtirokchi”ning o‘rniga qo‘yiladi.";
+    }
+    startBtn.disabled = n < MIN;
+  }
+  function renderConds(){
+    condList.innerHTML = "";
+    custom.forEach(function(t, i){
+      var li = document.createElement("li");
+      var s = document.createElement("span"); s.textContent = t;
+      var b = document.createElement("button"); b.textContent = "🗑"; b.setAttribute("aria-label","O‘chirish");
+      b.onclick = function(){ custom.splice(i,1); save(); renderConds(); renderNote(); };
+      li.appendChild(s); li.appendChild(b); condList.appendChild(li);
+    });
+  }
+  function renderAll(){ renderGrid(); renderChips(); renderNote(); }
+
+  function addPlayer(name){
+    name = (name || "").trim();
+    if(!name) return;
+    var di = -1;
+    for(var i=0;i<players.length;i++) if(DEF.test(players[i])){ di = i; break; }
+    if(di >= 0) players[di] = name;
+    else if(players.length >= MAX){ toast("Eng ko‘pi bilan " + MAX + " ta ishtirokchi 🙂"); return; }
+    else players.push(name);
+    save(); renderAll();
+  }
+  $("addName").onclick = function(){ addPlayer(nameInput.value); nameInput.value = ""; nameInput.focus(); };
+  nameInput.addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); $("addName").click(); } });
+
+  $("addCond").onclick = function(){
+    var t = condInput.value.trim();
+    if(!t) return;
+    custom.push(t); condInput.value = ""; save(); renderConds(); renderNote(); toast("Shart qo‘shildi ✅");
+  };
+  onlyCustomEl.onchange = function(){
+    if(onlyCustomEl.checked && !custom.length){ toast("Avval o‘z shartingizni qo‘shing"); onlyCustomEl.checked = false; return; }
+    onlyCustom = onlyCustomEl.checked; save(); renderNote();
+  };
+
+  startBtn.onclick = function(){
+    if(players.length < MIN) return;
+    tally = players.map(function(){ return 0; }); chick = players.map(function(){ return 0; });
+    round = 1; used = {}; rotation = 0; $("roundLbl").textContent = "🔥 Raund 1";
+    elSetup.classList.add("hidden"); elGame.classList.remove("hidden");
+    renderTally(); resizeCanvas(); haptic("tick");
+    try{ if(tg && tg.BackButton) tg.BackButton.show(); }catch(e){}
+  };
+  function backToSetup(){
+    if(spinning) return;
+    elGame.classList.add("hidden"); elSetup.classList.remove("hidden");
+    try{ if(tg && tg.BackButton) tg.BackButton.hide(); }catch(e){}
+  }
+  $("backBtn").onclick = backToSetup;
+  try{ if(tg && tg.BackButton) tg.BackButton.onClick(backToSetup); }catch(e){}
+  $("muteBtn").onclick = function(){ muted = !muted; $("muteBtn").textContent = muted ? "🔇" : "🔊"; save(); };
+
+  /* ================= Ranglar ================= */
+  function mix(hex, target, amt){
+    var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    r = Math.round(r + (target - r)*amt); g = Math.round(g + (target - g)*amt); b = Math.round(b + (target - b)*amt);
+    return "rgb(" + r + "," + g + "," + b + ")";
+  }
+  function rgba(hex, a){
+    var n = parseInt(hex.slice(1), 16);
+    return "rgba(" + (n >> 16) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + a + ")";
+  }
+
+  /* ================= G‘ildirak ================= */
+  function resizeCanvas(){
+    var r = canvas.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 3);
+    var size = Math.max(220, Math.round(r.width));
+    canvas.width = size*dpr; canvas.height = size*dpr;
+    drawWheel();
+  }
+  window.addEventListener("resize", function(){ if(!elGame.classList.contains("hidden")) resizeCanvas(); });
+
+  function drawWheel(){
+    var W = canvas.width, H = canvas.height, TWO = Math.PI*2;
+    if(!W) return;
+    var cx = W/2, cy = H/2, R = W/2 - W*0.012, ringT = W*0.055, r = R - ringT, n = players.length;
+    ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,W,H);
+
+    // Tashqi oltin halqa
+    var g = ctx.createLinearGradient(0,0,W,H);
+    g.addColorStop(0,"#fff0b0"); g.addColorStop(.3,"#f2b632"); g.addColorStop(.55,"#fff3c0"); g.addColorStop(.8,"#c98412"); g.addColorStop(1,"#ffe27a");
+    ctx.beginPath(); ctx.arc(cx,cy,R,0,TWO); ctx.arc(cx,cy,r,0,TWO,true); ctx.fillStyle = g; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy,r+1,0,TWO); ctx.lineWidth = W*0.006; ctx.strokeStyle = "rgba(90,45,0,.55)"; ctx.stroke();
+
+    if(n >= 2){
+      var a = TWO/n;
+      for(var i=0;i<n;i++){
+        var s = rotation + i*a, e = s + a, col = COLORS[i % COLORS.length];
+        var rg = ctx.createRadialGradient(cx,cy,r*.12,cx,cy,r);
+        rg.addColorStop(0, mix(col,255,.38)); rg.addColorStop(.55, col); rg.addColorStop(1, mix(col,0,.28));
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,s,e); ctx.closePath();
+        ctx.fillStyle = rg; ctx.fill();
+        ctx.lineWidth = Math.max(2, W*.006); ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.stroke();
+
+        // Ism
+        ctx.save();
+        ctx.translate(cx,cy); ctx.rotate(s + a/2);
+        ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+        var label = players[i]; if(label.length > 14) label = label.slice(0,13) + "…";
+        var maxW = r*.56, fs = Math.min(W*.068, r*Math.sin(a/2)*.95);
+        ctx.font = "900 " + fs + "px Rubik,-apple-system,Segoe UI,Roboto,sans-serif";
+        while(ctx.measureText(label).width > maxW && fs > 9){ fs -= 1; ctx.font = "900 " + fs + "px Rubik,-apple-system,Segoe UI,Roboto,sans-serif"; }
+        var tx = r - W*.04;
+        ctx.lineWidth = Math.max(3, fs*.22); ctx.strokeStyle = "rgba(0,0,0,.45)"; ctx.strokeText(label, tx, 0);
+        ctx.fillStyle = "#fff"; ctx.fillText(label, tx, 0);
+        ctx.restore();
+      }
+      // Yaltirash
+      var gl = ctx.createRadialGradient(cx - r*.35, cy - r*.4, r*.05, cx, cy, r);
+      gl.addColorStop(0,"rgba(255,255,255,.32)"); gl.addColorStop(.45,"rgba(255,255,255,.05)"); gl.addColorStop(1,"rgba(0,0,0,.18)");
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,TWO); ctx.fillStyle = gl; ctx.fill();
+    } else {
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,TWO); ctx.fillStyle = "#8c84b5"; ctx.fill();
+    }
+
+    // Lampochkalar
+    var bulbs = 28;
+    for(var d=0; d<bulbs; d++){
+      var ang = d*(TWO/bulbs), on = ((d + bulbPhase) % 2) === 0, br = R - ringT/2;
+      var bx = cx + Math.cos(ang)*br, by = cy + Math.sin(ang)*br;
+      ctx.save();
+      if(on){ ctx.shadowColor = "#fff2a0"; ctx.shadowBlur = W*.03; }
+      ctx.beginPath(); ctx.arc(bx,by,W*.0115,0,TWO);
+      var bg = ctx.createRadialGradient(bx - W*.003, by - W*.003, 0, bx, by, W*.0115);
+      if(on){ bg.addColorStop(0,"#ffffff"); bg.addColorStop(1,"#ffd23d"); } else { bg.addColorStop(0,"#d9a22f"); bg.addColorStop(1,"#8a5a0b"); }
+      ctx.fillStyle = bg; ctx.fill();
+      ctx.restore();
+    }
+  }
+  wheelDraw = drawWheel;
+
+  // Bo‘sh turganda lampochkalar miltillaydi
+  setInterval(function(){
+    if(!spinning && !elGame.classList.contains("hidden")){ bulbPhase = (bulbPhase + 1) % 2; drawWheel(); }
+  }, 520);
+
+  function sectorAt(rot){
+    var n = players.length, a = Math.PI*2/n, TWO = Math.PI*2;
+    var x = (((-Math.PI/2 - rot) % TWO) + TWO) % TWO;
+    return Math.min(n-1, Math.floor(x/a));
+  }
+
+  /* ================= Ovoz ================= */
+  var actx = null;
+  function ensureAudio(){
+    if(muted) return;
+    try{
+      if(!actx){ var AC = window.AudioContext || window.webkitAudioContext; if(AC) actx = new AC(); }
+      if(actx && actx.state === "suspended") actx.resume();
+    }catch(e){}
+  }
+  function beep(freq, dur, type, vol, when){
+    if(muted || !actx) return;
+    try{
+      var o = actx.createOscillator(), g = actx.createGain(), t0 = actx.currentTime + (when || 0);
+      o.type = type || "square"; o.frequency.value = freq;
+      g.gain.setValueAtTime(vol || .08, t0); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+      o.connect(g); g.connect(actx.destination); o.start(t0); o.stop(t0 + dur + .02);
+    }catch(e){}
+  }
+  function tickSound(){ beep(1250, .035, "square", .045); }
+  function winSound(){
+    beep(523,.16,"triangle",.16,0); beep(659,.16,"triangle",.16,.14); beep(784,.16,"triangle",.16,.28);
+    beep(1047,.5,"triangle",.18,.42); beep(1319,.5,"sine",.1,.5);
+  }
+
+  /* ================= Aylantirish ================= */
+  var pin = $("pin");
+  function flick(){
+    pin.style.transform = "rotate(-22deg)";
+    setTimeout(function(){ pin.style.transform = "rotate(0deg)"; }, 70);
+  }
+  function spin(){
+    if(spinning || players.length < 2) return;
+    ensureAudio();
+    spinning = true; spinBtn.disabled = true; stage.classList.add("spinning"); haptic("impact");
+
+    var n = players.length, a = Math.PI*2/n, TWO = Math.PI*2;
+    var w = Math.floor(Math.random()*n);
+    var desired = -Math.PI/2 - (w + .5)*a + (Math.random() - .5)*a*.7;
+    var start = rotation;
+    var delta = (((desired - start) % TWO) + TWO) % TWO;
+    var total = delta + TWO*(5 + Math.floor(Math.random()*3));
+    var dur = 5400 + Math.random()*1400, t0 = performance.now(), last = sectorAt(start);
+
+    function frame(now){
+      var t = Math.min(1, (now - t0)/dur), e = 1 - Math.pow(1 - t, 4);
+      rotation = start + total*e;
+      bulbPhase = Math.floor(now/(t < .8 ? 90 : 220)) % 2;
+      drawWheel();
+      var idx = sectorAt(rotation);
+      if(idx !== last){ last = idx; tickSound(); haptic("tick"); flick(); }
+      if(t < 1) requestAnimationFrame(frame);
+      else {
+        rotation = ((rotation % TWO) + TWO) % TWO; drawWheel();
+        stage.classList.remove("spinning");
+        setTimeout(function(){ finish(w); }, 450);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  spinBtn.onclick = spin;
+
+  /* ================= Natija ================= */
+  var overlay = $("overlay"), modal = $("modal"), condBox = $("condBox");
+  function finish(w){
+    currentWinner = w;
+    var col = COLORS[w % COLORS.length];
+    modal.style.setProperty("--pc", col); modal.style.setProperty("--pcg", rgba(col, .55));
+    $("mName").textContent = players[w];
+    var txt = pickCondition(w), c = $("mCond");
+    c.textContent = txt; c.className = "cond" + (txt.length > 105 ? " long" : "");
+    condBox.classList.remove("reveal");
+    overlay.classList.add("show");
+    setTimeout(function(){ condBox.classList.add("reveal"); }, 650);
+    winSound(); haptic("success"); confetti(col);
+  }
+  function closeModal(){
+    overlay.classList.remove("show"); condBox.classList.remove("reveal");
+    spinning = false; spinBtn.disabled = false;
+    round++; $("roundLbl").textContent = "🔥 Raund " + round;
+    renderTally();
+  }
+  $("doneBtn").onclick = function(){ if(currentWinner >= 0) tally[currentWinner]++; toast("Barakalla! 👏🔥"); closeModal(); };
+  var CH = ["Tovuq! Ko‘-ko‘-ko‘! 🐔","Qo‘rqoq tovuq! 🐔😂","Xo‘roz bo‘lolmadi 🐓","Tuxum qo‘yib qo‘y, tovuq! 🥚"];
+  $("chickBtn").onclick = function(){ if(currentWinner >= 0) chick[currentWinner]++; toast(CH[Math.floor(Math.random()*CH.length)]); closeModal(); };
+  $("nextBtn").onclick = closeModal;
+
+  function renderTally(){
+    var box = $("tally"); box.innerHTML = "";
+    players.forEach(function(name, i){
+      if(!tally[i] && !chick[i]) return;
+      var t = document.createElement("div"); t.className = "t";
+      var dot = document.createElement("i"); dot.style.background = COLORS[i % COLORS.length]; dot.style.color = COLORS[i % COLORS.length];
+      t.appendChild(dot); t.appendChild(document.createTextNode(name + " · " + (tally[i] ? tally[i] + " 🏆 " : "") + (chick[i] ? chick[i] + " 🐔" : "")));
+      box.appendChild(t);
+    });
+  }
+
+  /* ================= Yordamchilar ================= */
+  var toastTimer;
+  function toast(msg){
+    var el = $("toast"); el.textContent = msg; el.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 1900);
+  }
+  function confetti(main){
+    var cols = [main, "#ffc83d", "#ff3d8b", "#19d3ff", "#12d48a", "#ffffff", "#7c4dff"];
+    for(var i=0;i<70;i++){
+      var c = document.createElement("div"); c.className = "conf";
+      var sz = 7 + Math.random()*9;
+      c.style.left = Math.random()*100 + "vw";
+      c.style.width = sz + "px"; c.style.height = (sz*(Math.random() < .5 ? 1 : 2)) + "px";
+      c.style.background = cols[Math.floor(Math.random()*cols.length)];
+      c.style.borderRadius = Math.random() < .35 ? "50%" : "2px";
+      c.style.setProperty("--dx", (Math.random()*160 - 80) + "px");
+      c.style.setProperty("--rot", (360 + Math.random()*720) + "deg");
+      c.style.animationDuration = (2.2 + Math.random()*2.2) + "s";
+      c.style.animationDelay = (Math.random()*.6) + "s";
+      document.body.appendChild(c);
+      (function(el){ setTimeout(function(){ el.remove(); }, 5600); })(c);
+    }
+  }
+
+  /* ================= Boshlash ================= */
+  load();
+  onlyCustomEl.checked = onlyCustom && custom.length > 0;
+  if(!onlyCustomEl.checked) onlyCustom = false;
+  $("muteBtn").textContent = muted ? "🔇" : "🔊";
+  renderAll(); renderConds();
+})();
+</script>
+</body>
+</html>
